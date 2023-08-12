@@ -2,7 +2,7 @@
 @section('title', 'Classroom Website')
 @section('content')
     <section class="container">
-        <h1>Classroom Details</h1>
+        <h1>Classroom Details + Classwoks</h1>
         <h2>{{ $classroom->name }} => #{{ $classroom->id }}</h2>
         <h3>{{$classroom->section}}</h3>
         <div class="row">
