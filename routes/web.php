@@ -1,10 +1,17 @@
 <?php
 
+use App\Http\Controllers\ClassroomPeopleController;
 use App\Http\Controllers\ClassroomsController;
 use App\Http\Controllers\ClassworkController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\JoinClassroomController;
+use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\SubscriptionsController;
 use App\Http\Controllers\TopicsController;
+use App\Http\Middleware\ApplyUserpreferences;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -63,7 +70,41 @@ Route::middleware('auth')->group(function(){
 
         Route::resource('/classrooms.classworks', ClassworkController::class);
 
+        Route::get('/classrooms/{classroom}/people', [ClassroomPeopleController::class, 'index'])
+            ->name('classrooms.people');
+
+        Route::delete('/classrooms/{classroom}/people', [ClassroomPeopleController::class, 'destroy'])
+            ->name('classrooms.people.destroy');
+
+        Route::post('comments/stroe', [CommentController::class, 'store'])
+            ->name('comments.store');
+
+        Route::post('classworks/{classwork}/submissions', [SubmissionController::class, 'store'])
+            ->name('submissions.store')
+            ->middleware('can:create, App/Models/Classwork');
+
+        Route::get('submissions/{submission}/file', [SubmissionController::class, 'file'])
+            ->name('submissions.file');
+
+        Route::post('subscriptions', [SubscriptionsController::class, 'store'])
+            ->name('subscriptions.store');
+
+        Route::post('payments', [PaymentsController::class, 'store'])
+            ->name('payments.store');
+
+        Route::get('payments/{subscription}/success', [PaymentsController::class, 'success'])
+            ->name('payments.success');
+
+        Route::get('payments/{subscription}/cancel', [PaymentsController::class, 'cancel'])
+            ->name('payments.cancel');
+
+        Route::get('subscriptions/{subscription}/checkout', [PaymentsController::class, 'create'])
+            ->name('checkout');
+
 });
 
+Route::get('plans', [PlanController::class, 'index'])->name('plans');
 
-require __DIR__.'/auth.php';
+// Route::post('/payments/stripe/webhook', StripeController::class);
+
+// require __DIR__.'/auth.php';

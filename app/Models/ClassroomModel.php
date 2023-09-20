@@ -52,16 +52,18 @@ class ClassroomModel extends Model
     //Glopal Scope
     protected static function booted()
     {
-        static::addGlobalScope('user', function(Builder $builder){
-            $builder->where('user-id', '=', Auth::user()->id)
-                ->orWhereExists(function ($query) {
-                    $query->select(DB::raw('1'))
-                    ->from('classroom_user')
-                    ->whereColumn('classroom_id', '=', 'classrooms.id')
-                    ->where('user_id', '=', Auth::id());
-                });
-                // ->orWhereRaw('classroom.id in (select classroom.id from classroom_user where user_id = ?)',[Auth::user()->id]);
-        });
+        if($id = Auth::id()){
+            static::addGlobalScope('user', function(Builder $builder){
+                $builder->where('user-id', '=', Auth::user()->id)
+                    ->orWhereExists(function ($query) {
+                        $query->select(DB::raw('1'))
+                        ->from('classroom_user')
+                        ->whereColumn('classroom_id', '=', 'classrooms.id')
+                        ->where('user_id', '=', Auth::id());
+                    });
+                    // ->orWhereRaw('classroom.id in (select classroom.id from classroom_user where user_id = ?)',[Auth::user()->id]);
+            });
+        }
 
         //Listeners And Events
         static::observe(ClassroomObserver::class);
@@ -86,10 +88,19 @@ class ClassroomModel extends Model
     }
 
     //difine accessore
-    //get{Attribute}Attributr
+    //get{Attribute}Attribute
     public function getNameAttribute($value)
     {
         return strtoupper($value);
+    }
+
+    public function getCoverImageUrlAttribute()
+    {
+        if($this->cover_image_path){
+            return Storage::disk(static::$disk)->url($this->cover_image_path);
+        }
+
+        return 'https://placeholder.co/800x300';
     }
 
     public function classworks(): HasMany
@@ -101,4 +112,40 @@ class ClassroomModel extends Model
     {
         return $this->hasMany(TopicModel::class, 'classroom_id', 'id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user-id', 'id');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'classroom_user', 'classroom_id', 'user_id', 'id', 'id')
+            ->withPivot(['role']);
+    }
+
+    public function teachers()
+    {
+        return $this->users()->wherePivot('role', '=', 'teacher');
+    }
+
+    public function students()
+    {
+        return $this->users()->wherePivot('role', '=', 'student');
+    }
+
+    public function streams()
+    {
+        return $this->hasMany(Stream::class)->latest();
+    }
+
+    protected $appends = [
+        'cover_image_url',
+    ];
+
+    protected $hidden = [
+        'cover_image_path',
+        'deleted_at',
+    ];
+
 }

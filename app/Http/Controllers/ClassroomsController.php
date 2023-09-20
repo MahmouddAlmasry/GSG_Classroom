@@ -17,6 +17,11 @@ use Illuminate\Validation\Rule;
 
 class ClassroomsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('subscriped')->only('create', 'store');
+    }
+
     public function index()
     {
         // three way to get data from session

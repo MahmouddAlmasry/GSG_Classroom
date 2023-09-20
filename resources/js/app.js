@@ -1,7 +1,18 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
+// import Alpine from 'alpinejs';
 
-window.Alpine = Alpine;
+// window.Alpine = Alpine;
 
-Alpine.start();
+// Alpine.start();
+if(classroomId){
+    Echo.private('classroom.' + classroomId)
+    .listen('.classwork-created', function(event){
+        alert(event.title);
+    });
+}
+
+Echo.private('App.Models.User.' + userId)
+    .notification(function (event) {
+        alert(event.body);
+    });
